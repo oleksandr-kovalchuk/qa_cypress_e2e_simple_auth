@@ -1,11 +1,16 @@
 /// <reference types="cypress" />
 
-describe('Sign In page', () => {
-  const loginUrl = 'https://the-internet.herokuapp.com/login';
-  const validUsername = 'tomsmith';
-  const validPassword = 'SuperSecretPassword!';
-  const invalidUsername = 'invalidUser';
-  const invalidPassword = 'invalidPassword';
+describe('Sign In Page Tests', () => {
+  const config = {
+    loginUrl: 'https://the-internet.herokuapp.com/login',
+    validUsername: 'tomsmith',
+    validPassword: 'SuperSecretPassword!',
+    invalidUsername: 'invalidUser',
+    invalidPassword: 'invalidPassword',
+    successLoginMessage: 'You logged into a secure area!',
+    successLogoutMessage: 'You logged out of the secure area!',
+    invalidCredentialsMessage: 'Your username is invalid!'
+  };
 
   const selectors = {
     usernameInput: '#username',
@@ -17,7 +22,7 @@ describe('Sign In page', () => {
   };
 
   beforeEach(() => {
-    cy.visit(loginUrl);
+    cy.visit(config.loginUrl);
   });
 
   const login = (username, password) => {
@@ -26,28 +31,32 @@ describe('Sign In page', () => {
     cy.get(selectors.submitButton).click();
   };
 
-  it('Should log in with valid credentials', () => {
-    login(validUsername, validPassword);
+  it('should successfully log in with valid credentials', () => {
+    login(config.validUsername, config.validPassword);
 
-    cy.get(selectors.successMessage).should('be.visible');
+    cy.get(selectors.successMessage)
+      .should('be.visible')
+      .and('contain', config.successLoginMessage);
     cy.url().should('include', '/secure');
-    cy.contains('You logged into a secure area!');
   });
 
-  it('Should display validation errors for invalid credentials', () => {
-    login(invalidUsername, invalidPassword);
+  it('should display an error message for invalid credentials', () => {
+    login(config.invalidUsername, config.invalidPassword);
 
-    cy.get(selectors.errorMessage).should('be.visible');
-    cy.contains('Your username is invalid!');
+    cy.get(selectors.errorMessage)
+      .should('be.visible')
+      .and('contain', config.invalidCredentialsMessage);
+    cy.url().should('include', '/login');
   });
 
-  it('Should log out successfully from the app', () => {
-    login(validUsername, validPassword);
+  it('should successfully log out from the application', () => {
+    login(config.validUsername, config.validPassword);
 
-    cy.get(selectors.logoutButton).click();
+    cy.get(selectors.logoutButton).should('be.visible').click();
 
-    cy.get(selectors.successMessage).should('be.visible');
-    cy.contains('You logged out of the secure area!');
+    cy.get(selectors.successMessage)
+      .should('be.visible')
+      .and('contain', config.successLogoutMessage);
     cy.url().should('include', '/login');
   });
 });
